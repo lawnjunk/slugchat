@@ -1,11 +1,28 @@
 'use strict'
 
 // DEPENDENCIES
-import * as mongo from './mongo.js'
+import cors from 'cors'
+import morgan from 'morgan'
 import express from 'express'
+import * as mongo from './mongo.js'
+
+import authRouter from '../router/auth.js'
 
 // STATE
 const app = express()
+
+// global middleware
+app.use(morgan('dev'))
+app.use(cors({
+  origin: process.env.CORS_ORIGINS.split(' '),
+  credentials: true, 
+}))
+
+// routers
+app.use(authRouter)
+
+// handle errors
+
 
 const state = {
   isOn: false, 

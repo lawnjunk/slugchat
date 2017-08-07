@@ -5,10 +5,9 @@ let required = [
   'SECRET',
   'API_URL',
   'NODE_ENV',
+  'CLIENT_URL',
   'CORS_ORIGINS',
   'MONGODB_URI',
-  'REDIS_PORT', 
-  'REDIS_HOST',
 ]
 
 export default () => {
