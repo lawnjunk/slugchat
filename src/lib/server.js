@@ -7,6 +7,8 @@ import express from 'express'
 import * as mongo from './mongo.js'
 
 import authRouter from '../router/auth.js'
+import fourOhFour from '../middleware/four-oh-four.js'
+import errorHandler from '../middleware/error-middleware.js'
 
 // STATE
 const app = express()
@@ -22,7 +24,8 @@ app.use(cors({
 app.use(authRouter)
 
 // handle errors
-
+app.use(fourOhFour)
+app.use(errorHandler)
 
 const state = {
   isOn: false, 

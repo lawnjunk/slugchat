@@ -1,18 +1,23 @@
-import {each} from 'lodash/fp'
-
 let required = [
   'PORT',
   'SECRET',
   'API_URL',
   'NODE_ENV',
   'CLIENT_URL',
-  'CORS_ORIGINS',
   'MONGODB_URI',
+  'CORS_ORIGINS',
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
 ]
 
-export default () => {
-  each((key) => {
+try {
+  required.forEach(key => {
     if(!process.env[key])
-      throw new Error(`ENVIRONMNET ERROR: process.env.${key} must be set`)
-  })(required)
+      throw new Error(`ENVIRONMNET ERROR: slugchat requires process.env.${key} to be set`)
+  })
+} catch (e) {
+  console.error(e.message)
+  process.exit(1)
 }
+
+

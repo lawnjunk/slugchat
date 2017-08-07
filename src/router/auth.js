@@ -5,22 +5,11 @@ import User from '../model/user.js'
 import superagent from 'superagent'
 import bodyParser from 'body-parser'
 import basicAuth from '../middleware/basic-auth.js'
+import * as querystring from 'querystring'
 
 export default new Router()
-.get('/oauth/google/callback', (req, res, next) => {
-  console.log('boom', req.query)
-  let authURI = 'https://accounts.google.com/o/oauth2/v2/auth'
-  let redirect_uri = `${process.env.API_URL}/oauth/google/code`
-  let query = querystring.encode({
-    redirect_uri,
-    response_type: 'code',
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    scope: 'openid',
-  })
-  res.redirect(`${authURI}?${query}`)
-})
 .get('/oauth/google/code', (req, res, next) => {
+  console.log('boom', req.query)
   if(!req.query.code){
     // it failed 
     res.redirect(process.env.CLIENT_URL)
@@ -44,9 +33,9 @@ export default new Router()
       .set('Authorization', `Bearer ${res.body.access_token}`)  
     })
     // find or create user
-    .then((res) => {
-      console.log('openid', req.body)
-      return  User.handleOAUTH(req.body)
+    .then((response) => {
+      console.log('openid', response.body)
+      return User.handleOAUTH(response.body)
     })
     // genorate user token
     .then(user => user.tokenCreate())
