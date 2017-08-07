@@ -9,8 +9,6 @@
     "watch": "nodemon index.js",
     "test": "jest --runInBand",
     "test-watch": "jest --watch --runInBand",
-    "redis-on": "redis-server --port 5000",
-    "redis-off": "killall redis-server",
     "mongo-on": "mkdir -p ./db && mongod --dbpath ./db",
     "mongo-off": "killall mongod"
   },
@@ -28,7 +26,6 @@
     "lodash": "^4.17.4",
     "mongoose": "^4.11.5",
     "morgan": "^1.8.2",
-    "redis": "^2.7.1",
     "socket.io": "^2.0.3",
     "superagent": "^3.5.2"
   },
