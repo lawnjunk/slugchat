@@ -12,9 +12,8 @@ import Mongoose, {Schema} from 'mongoose'
 const userSchema =  new Schema({
   email: {type: String, required: true, unique: true},
   username: {type: String, required: true, unique: true},
-  passwordHash: {type: String, required: true},
-  randomHash: {type: String,  unique: true, default: ''},
-  profile: {type: Schema.Types.ObjectId},
+  passwordHash: {type: String},
+  tokenSeed: {type: String,  unique: true, default: ''},
 })
 
 // INSTANCE METHODS
@@ -28,10 +27,10 @@ userSchema.methods.passwordCompare = function(password){
 }
 
 userSchema.methods.tokenCreate  = function(){
-  this.randomHash = randomBytes(32).toString('base64')
+  this.tokenSeed = randomBytes(32).toString('base64')
   return this.save()
   .then(user => {
-    return jwt.sign({randomHash: this.randomHash}, process.env.SECRET)
+    return jwt.sign({tokenSeed: this.tokenSeed}, process.env.SECRET)
   })
   .then(token => {
     return token
@@ -42,7 +41,7 @@ userSchema.methods.tokenCreate  = function(){
 const User = Mongoose.model('user', userSchema)
 
 // STATIC METHODS
-User.create = function (user) {
+User.createFromSignup = function (user) {
   if(!user.password || !user.email || !user.username)
     return Promise.reject(
       createError(400, 'VALIDATION ERROR: missing username email or password '))
@@ -54,6 +53,24 @@ User.create = function (user) {
   .then(passwordHash => {
     let data = Object.assign({}, user, {passwordHash}) 
     return new User(data).save()
+  })
+}
+
+User.handleOAUTH = function(user){
+  // validation
+  if(!user.email)
+    return Promise.reject(createError(400, 'VALIDATION ERROR: missing email'))
+  // check if user exists 
+  return User.findOne({email: user.email})
+  .then(user => {
+    if(!user) return Promise.reject()
+    return user
+  })
+  .catch(() => {
+    return new User({
+      email: user.email,
+      username: user.email.split('@')[0],
+    }).save()
   })
 }
 

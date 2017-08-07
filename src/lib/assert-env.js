@@ -8,7 +8,7 @@ let required = [
   'CORS_ORIGINS',
   'MONGODB_URI',
   'REDIS_PORT', 
-  'REDIS_URL',
+  'REDIS_HOST',
 ]
 
 export default () => {
