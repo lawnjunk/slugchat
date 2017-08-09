@@ -24,13 +24,11 @@ export default new Router()
       redirect_uri: `${process.env.API_URL}/oauth/google/code`,
     })
     .then(response => {
-      console.log('google token data', response.body)
       // get the user profile
       return superagent.get('https://www.googleapis.com/plus/v1/people/me/openIdConnect')
       .set('Authorization', `Bearer ${response.body.access_token}`)
     })
     .then(response => {
-      console.log('google profile', response.body)
       // login or create user from profile
       return User.handleOAUTH(response.body)
     })
