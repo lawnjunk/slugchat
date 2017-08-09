@@ -2,51 +2,46 @@
 
 import {Router} from 'express'
 import User from '../model/user.js'
-import superagent from 'superagent'
 import bodyParser from 'body-parser'
 import basicAuth from '../middleware/basic-auth.js'
-import * as querystring from 'querystring'
+import superagent from 'superagent'
 
 export default new Router()
 .get('/oauth/google/code', (req, res, next) => {
-  console.log('boom', req.query)
-  if(!req.query.code){
-    // it failed 
+  console.log('req.query', req.query)
+  if(!req.query.code) {
+    // user has denied access
     res.redirect(process.env.CLIENT_URL)
   } else {
-    let tokenURI = 'https://www.googleapis.com/oauth2/v4/token'
-    let redirect_uri = `${process.env.API_URL}/oauth/google/code`
-    // request a token
-    superagent.post(tokenURI)
+    // exchange the code for a google access token
+    superagent.post('https://www.googleapis.com/oauth2/v4/token')
     .type('form')
     .send({
-      redirect_uri, 
       code: req.query.code,
+      grant_type: 'authorization_code',
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      grant_type: 'authorization_code',
+      redirect_uri: `${process.env.API_URL}/oauth/google/code`,
     })
-    // request openid
-    .then((res) => {
-      console.log('token', req.body)
+    .then(response => {
+      console.log('google token data', response.body)
+      // get the user profile
       return superagent.get('https://www.googleapis.com/plus/v1/people/me/openIdConnect')
-      .set('Authorization', `Bearer ${res.body.access_token}`)  
+      .set('Authorization', `Bearer ${response.body.access_token}`)
     })
-    // find or create user
-    .then((response) => {
-      console.log('openid', response.body)
+    .then(response => {
+      console.log('google profile', response.body)
+      // login or create user from profile
       return User.handleOAUTH(response.body)
     })
-    // genorate user token
     .then(user => user.tokenCreate())
-    // redirect to client with token in cookie
     .then(token => {
       res.cookie('X-Slugchat-Token', token)
       res.redirect(process.env.CLIENT_URL)
     })
-    .catch((err) => {
-      console.error(err)
-      res.redirect(process.env.CLIENT_URL) 
+    .catch((error) => {
+      console.error(error)
+      res.redirect(process.env.CLIENT_URL)
     })
   }
 })
@@ -54,26 +49,25 @@ export default new Router()
   new User.createFromSignup(req.body)
   .then(user => user.tokenCreate())
   .then(token => {
-    res.cookie('X-Sluggram-Token', token, {maxAge: 900000})
+    res.cookie('X-Slugchat-Token', token)
     res.send(token)
-  })
-  .catch(next)
-})
-.get('/usernames/:username', (req, res, next) => {
-  User.findOne({username: username})
-  .then(user => {
-    if(!user)
-      return res.sendStatus(409)
-    return res.sendStatus(200)
   })
   .catch(next)
 })
 .get('/login', basicAuth, (req, res, next) => {
   req.user.tokenCreate()
   .then((token) => {
-    let cookieOptions = {maxAge: daysToMilliseconds(7)}
-    res.cookie('X-Sluggram-Token', token, cookieOptions)
+    res.cookie('X-Slugchat-Token', token)
     res.send(token)
+  })
+  .catch(next)
+})
+.get('/usernames/:username', (req, res, next) => {
+  User.findOne({username: req.params.username})
+  .then(user => {
+    if(!user)
+      return res.sendStatus(200)
+    return res.sendStatus(409)
   })
   .catch(next)
 })

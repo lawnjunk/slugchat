@@ -1,10 +1,13 @@
 'use strict'
 
 // DEPENDENCIES
+import {Server} from 'http'
 import cors from 'cors'
 import morgan from 'morgan'
 import express from 'express'
+import io from './io.js'
 import * as mongo from './mongo.js'
+import subscribers from '../subscribe/index.js'
 
 import authRouter from '../router/auth.js'
 import fourOhFour from '../middleware/four-oh-four.js'
@@ -19,6 +22,7 @@ app.use(cors({
   origin: process.env.CORS_ORIGINS.split(' '),
   credentials: true, 
 }))
+
 
 // routers
 app.use(authRouter)
@@ -40,7 +44,9 @@ export const start = () => {
     state.isOn = true
     mongo.start()
     .then(() => {
-      state.http = app.listen(process.env.PORT, () => {
+      state.http = Server(app)
+      io(state.http, subscribers)
+      state.http.listen(process.env.PORT, () => {
         console.log('__SERVER_UP__', process.env.PORT)
         resolve()
       })

@@ -1,11 +1,12 @@
 'use strict'
 
 // DEPENDECIES
+import faker from 'faker'
 import * as bcrypt from 'bcrypt'
 import {randomBytes} from 'crypto'
 import * as jwt from 'jsonwebtoken'
 import createError from 'http-errors'
-import {promisify} from '../lib/promisify.js'
+import promisify from '../lib/promisify.js'
 import Mongoose, {Schema} from 'mongoose'
 
 // SCHEMA
@@ -56,21 +57,34 @@ User.createFromSignup = function (user) {
   })
 }
 
-User.handleOAUTH = function(user){
-  // validation
-  if(!user.email)
-    return Promise.reject(createError(400, 'VALIDATION ERROR: missing email'))
-  // check if user exists 
-  return User.findOne({email: user.email})
+User.handleOAUTH = function(data) {
+  if(!data || !data.email)
+    return Promise.reject(
+      createError(400, 'VALIDATION ERROR: missing email'))
+  return User.findOne({email: data.email})
   .then(user => {
-    if(!user) return Promise.reject()
+    if(!user)
+      throw new Error('create the user')
+    console.log('loggin in account')
     return user
   })
   .catch(() => {
+    // create user from the email
+    console.log('creating account')
     return new User({
-      email: user.email,
-      username: user.email.split('@')[0],
+      username: faker.internet.userName(),
+      email: data.email,
     }).save()
+  })
+}
+
+User.fromToken = function(token){
+  return promisify(jwt.verify)(token, process.env.SECRET)
+  .then(({tokenSeed}) => User.findOne({tokenSeed}))
+  .then((user) => {
+    if(!user)
+      throw createError(401, 'AUTH ERROR: user not found')
+    return user
   })
 }
 
