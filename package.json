@@ -27,11 +27,11 @@
     "lodash": "^4.17.4",
     "mongoose": "^4.11.5",
     "morgan": "^1.8.2",
+    "faker": "^4.1.0",
     "socket.io": "^2.0.3",
     "superagent": "^3.5.2"
   },
   "devDependencies": {
-    "faker": "^4.1.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
   }
