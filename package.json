@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "engines":{
+    "node": "7.10.1"
+  },
   "scripts": {
     "lint": "eslint .",
     "start": "node index.js",
@@ -29,9 +32,7 @@
     "morgan": "^1.8.2",
     "faker": "^4.1.0",
     "socket.io": "^2.0.3",
-    "superagent": "^3.5.2"
-  },
-  "devDependencies": {
+    "superagent": "^3.5.2",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0"
   }
