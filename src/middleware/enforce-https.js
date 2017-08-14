@@ -3,7 +3,7 @@ export default (req, res, next) => {
   if(process.env.NODE_ENV !== 'production')
     return next()
   if(req.headers['x-forwarded-proto'] !== 'https'){
-    let secureURL = 'https://' + req.hostname + req.originalUrl)
+    let secureURL = 'https://' + req.hostname + req.originalUrl
     console.log('secureURL', secureURL)
     return res.redirect(secureURL)
   }
