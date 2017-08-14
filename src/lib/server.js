@@ -8,6 +8,7 @@ import express from 'express'
 import io from './io.js'
 import * as mongo from './mongo.js'
 import subscribers from '../subscribe/index.js'
+import enforceHTTPS from '../middleware/enforce-https.js'
 
 import authRouter from '../router/auth.js'
 import fourOhFour from '../middleware/four-oh-four.js'
@@ -17,6 +18,7 @@ import errorHandler from '../middleware/error-middleware.js'
 const app = express()
 
 // global middleware
+app.use(enforceHTTPS)
 app.use(morgan('dev'))
 app.use(cors({
   origin: process.env.CORS_ORIGINS.split(' '),
